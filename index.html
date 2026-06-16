@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>Tap Tap Center</title>
+<style>
+:root{--text:#f3eadf;--muted:#b9ad9d;--gold:#f5c451;--green:#78e08f;--red:#ff7675;--blue:#74b9ff;--purple:#c084fc}
+*{box-sizing:border-box}
+html,body{width:100%;height:100%;margin:0}
+body{min-height:100vh;background:radial-gradient(circle at 50% 30%,#27202a 0%,#111318 55%,#08090c 100%);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;display:flex;flex-direction:column;overflow:hidden}
+header{padding:12px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px;background:rgba(8,9,12,.7);border-bottom:1px solid rgba(255,255,255,.08);backdrop-filter:blur(10px);z-index:10}
+h1{font-size:20px;margin:0;letter-spacing:.03em}.subtitle{color:var(--muted);font-size:13px;margin-top:2px}
+.top-stats{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}.stat{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:8px 10px;min-width:86px;text-align:center}.stat strong{display:block;font-size:17px;color:white}.stat span{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+main{flex:1;display:grid;grid-template-columns:minmax(320px,1fr) 280px;min-height:0}
+#gameWrap{position:relative;min-height:520px;overflow:hidden;background:#0b0d12}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:pointer}
+aside{background:rgba(20,22,30,.86);border-left:1px solid rgba(255,255,255,.08);padding:16px;overflow-y:auto;backdrop-filter:blur(12px)}
+.card{background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.035));border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:14px;margin-bottom:14px}.card h2{font-size:15px;margin:0 0 8px;color:white}.card p,.card li{color:var(--muted);font-size:13px;line-height:1.45}.card ul{padding-left:18px;margin:8px 0 0}
+.creditCard{text-align:center}.creditCard a{color:var(--gold);font-weight:900;text-decoration:none}.creditCard a:hover{text-decoration:underline}.creditCard p{margin:4px 0}
+button{appearance:none;border:0;border-radius:14px;padding:12px 14px;font-weight:800;color:#15110a;background:linear-gradient(180deg,#ffd66b,#f5a623);box-shadow:0 6px 20px rgba(245,196,81,.25);cursor:pointer;width:100%;font-size:15px;user-select:none;touch-action:none}button:active{transform:translateY(1px)}.secondary{background:linear-gradient(180deg,#a9c9ff,#5d91ff);color:#071123;box-shadow:0 6px 20px rgba(116,185,255,.2);margin-top:8px}
+label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em}input[type=range]{width:100%}
+.meter{height:12px;border-radius:20px;background:rgba(255,255,255,.09);overflow:hidden;border:1px solid rgba(255,255,255,.08)}.meter>div{height:100%;width:0%;transition:width .06s linear;background:linear-gradient(90deg,var(--red),var(--gold),var(--green))}
+#powerOverlay{position:absolute;right:18px;top:50%;transform:translateY(-50%);height:min(430px,70%);width:72px;z-index:7;pointer-events:none;display:flex;align-items:center;justify-content:center;gap:8px;opacity:.96}
+.powerLabels{height:100%;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;font-size:10px;font-weight:900;color:rgba(255,255,255,.65);text-shadow:0 1px 4px rgba(0,0,0,.8);letter-spacing:.04em}
+.powerGauge{position:relative;width:28px;height:100%;border-radius:999px;background:linear-gradient(180deg,rgba(255,118,117,.18),rgba(245,196,81,.13),rgba(116,185,255,.13));border:2px solid rgba(255,255,255,.2);box-shadow:inset 0 0 16px rgba(0,0,0,.55),0 8px 30px rgba(0,0,0,.35);overflow:hidden}
+#powerFill{position:absolute;left:0;bottom:0;width:100%;height:0%;background:linear-gradient(0deg,#74b9ff 0%,#f5c451 58%,#ff7675 100%);border-radius:999px;transition:height .04s linear;box-shadow:0 0 18px rgba(245,196,81,.35)}
+.powerTicks{position:absolute;inset:8px 0;display:flex;flex-direction:column;justify-content:space-between;pointer-events:none}.powerTicks span{display:block;height:1px;width:100%;background:rgba(255,255,255,.28)}
+#powerPercent{position:absolute;right:0;bottom:-34px;width:72px;text-align:center;color:white;font-size:17px;font-weight:950;text-shadow:0 2px 8px rgba(0,0,0,.8)}
+#message{position:absolute;left:50%;top:22px;transform:translateX(-50%);padding:10px 14px;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.12);border-radius:999px;font-weight:800;color:white;opacity:0;pointer-events:none;transition:opacity .15s ease;white-space:nowrap;z-index:8}#message.show{opacity:1}
+.result{position:absolute;inset:0;display:none;align-items:flex-start;justify-content:center;background:rgba(120,120,120,.23);z-index:20;padding:18px 20px 20px;pointer-events:auto}
+.result.show{display:flex}
+.resultBox{width:min(560px,92vw);background:rgba(24,28,37,.86);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);box-shadow:0 18px 60px rgba(0,0,0,.42);border-radius:22px;padding:16px 18px;text-align:center}
+.resultBox h2{font-size:24px;margin:0 0 2px}.resultBox p{color:var(--muted);margin:8px 0 12px;font-size:13px}.scoreBig{font-size:42px;font-weight:900;color:var(--gold);line-height:1;margin:8px 0}.rankSub{color:var(--gold);font-weight:900;font-size:15px;margin-top:2px}
+.resultActions{display:flex;gap:10px;justify-content:center}.resultActions button{max-width:180px;padding:10px 12px}
+.rankList li{display:flex;justify-content:space-between;gap:8px}.rankList b{color:white}.rankList small{color:var(--muted)}
+kbd{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-bottom-width:3px;padding:2px 6px;border-radius:6px;color:white;font-size:12px}
+@media(max-width:850px){body{overflow:auto}main{grid-template-columns:1fr;grid-template-rows:minmax(420px,62vh) auto}#gameWrap{min-height:420px}aside{border-left:0;border-top:1px solid rgba(255,255,255,.08)}header{align-items:flex-start;flex-direction:column}.top-stats{width:100%;justify-content:space-between}.stat{flex:1}#powerOverlay{right:10px;width:58px;height:min(330px,64%)}#powerPercent{width:58px;font-size:14px}.resultBox h2{font-size:20px}.scoreBig{font-size:34px}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Tap Tap Center</h1>
+    <div class="subtitle">Center the clay with timed fingertip taps</div>
+  </div>
+  <div class="top-stats">
+    <div class="stat"><strong id="tapCount">0</strong><span>Taps</span></div>
+    <div class="stat"><strong id="timer">0.0s</strong><span>Time</span></div>
+    <div class="stat"><strong id="offsetText">--</strong><span>Off Center</span></div>
+  </div>
+</header>
+
+<main>
+  <div id="gameWrap">
+    <div id="message">Hold, then release!</div>
+
+    <div id="powerOverlay">
+      <div class="powerLabels"><span>STRONG</span><span>MED</span><span>LIGHT</span></div>
+      <div class="powerGauge">
+        <div id="powerFill"></div>
+        <div class="powerTicks"><span></span><span></span><span></span><span></span><span></span></div>
+      </div>
+      <div id="powerPercent">0%</div>
+    </div>
+
+    <canvas id="game"></canvas>
+
+    <div class="result" id="result">
+      <div class="resultBox">
+        <h2 id="resultTitle">Centered!</h2>
+        <div class="rankSub" id="rankSub">弟子 Apprentice</div>
+        <div class="scoreBig" id="scoreText">000</div>
+        <p id="resultDetails"></p>
+        <div class="resultActions">
+          <button id="playAgainBtn">Play Again</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <aside>
+    <div class="card">
+      <h2>Centering progress</h2>
+      <div class="meter"><div id="progressBar"></div></div>
+      <p id="progressHint">Get the clay dot into the center ring.</p>
+    </div>
+
+    <div class="card">
+      <h2>How to play</h2>
+      <p>Objective: center the clay with the fewest taps possible. Fewer taps, faster centering, and cleaner timing give a better rank.</p>
+      <ul>
+        <li>Press and release to tap.</li>
+        <li>A quick click is the lightest touch.</li>
+        <li>Hold longer to build stronger tap power.</li>
+        <li>The vertical power meter uses a linear scale.</li>
+        <li>Release when the clay passes through the golden lower-right zone.</li>
+        <li>Too much power can overshoot the center.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <label for="rpmSlider">Wheel speed: <span id="rpmLabel">40</span> RPM</label>
+      <input id="rpmSlider" type="range" min="30" max="120" step="5" value="40" />
+    </div>
+
+    <button id="tapBtn">Hold to Charge, Release to Tap</button>
+    <button id="restartBtn" class="secondary">Restart</button>
+
+    <div class="card" style="margin-top:14px;">
+      <h2>Ranks</h2>
+      <ul class="rankList">
+        <li><b>Deshi 弟子</b><small>Apprentice</small></li>
+        <li><b>Senpai 先輩</b><small>Senior</small></li>
+        <li><b>Sensei 先生</b><small>Master</small></li>
+        <li><b>Dai Sensei 大先生</b><small>Great Master</small></li>
+        <li><b>Ningen Kokuhou 人間国宝</b><small>Living National Treasure</small></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Scoring</h2>
+      <p>Excellent: centered in 3–4 taps. Beginner: more taps and more time. Clean timing plus correct strength gives the best rank.</p>
+    </div>
+
+    <div class="card creditCard">
+      <p><a href="https://catalyst.voov.ai/share/gp5ccLYvDjG_bLY4FsrgX1" target="_blank" rel="noopener noreferrer">Play / share Tap Tap Center</a></p>
+      <p>Created with <a href="https://voov.ai" target="_blank" rel="noopener noreferrer">voov.ai</a></p>
+    </div>
+  </aside>
+</main>
+
+<script>
+const gameWrap=document.getElementById("gameWrap");
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+
+const tapCountEl=document.getElementById("tapCount");
+const timerEl=document.getElementById("timer");
+const offsetTextEl=document.getElementById("offsetText");
+const progressBar=document.getElementById("progressBar");
+const progressHint=document.getElementById("progressHint");
+const powerFill=document.getElementById("powerFill");
+const powerPercent=document.getElementById("powerPercent");
+const messageEl=document.getElementById("message");
+const resultEl=document.getElementById("result");
+const resultTitle=document.getElementById("resultTitle");
+const rankSub=document.getElementById("rankSub");
+const scoreText=document.getElementById("scoreText");
+const resultDetails=document.getElementById("resultDetails");
+const rpmSlider=document.getElementById("rpmSlider");
+const rpmLabel=document.getElementById("rpmLabel");
+const tapBtn=document.getElementById("tapBtn");
+const restartBtn=document.getElementById("restartBtn");
+const playAgainBtn=document.getElementById("playAgainBtn");
+
+let W=0,H=0,cx=0,cy=0,wheelR=0,clayR=0;
+let p={x:0,y:0};
+let wheelAngle=0,lastTime=performance.now(),startTime=performance.now();
+let elapsed=0,taps=0,centeredHold=0,gameOver=false,rpm=40;
+let isCharging=false,chargeStart=0,chargePower=0,totalPower=0;
+let tapEffects=[],floatingTexts=[],clayTexture=[],tapPulse=0;
+
+const maxChargeTime=1000;
+const tapAngle=Math.PI/7.2;
+const strikeDirection={x:Math.cos(tapAngle),y:Math.sin(tapAngle)};
+const tapImpulse={x:-strikeDirection.x,y:-strikeDirection.y};
+
+function resize(){
+  const r=gameWrap.getBoundingClientRect();
+  const dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1));
+  W=Math.max(320,r.width||window.innerWidth);
+  H=Math.max(320,r.height||520);
+  canvas.width=Math.floor(W*dpr);
+  canvas.height=Math.floor(H*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  cx=W*.5;
+  cy=H*.52;
+  wheelR=Math.min(W,H)*.38;
+  clayR=wheelR/6;
+}
+
+function rand(a,b){return Math.random()*(b-a)+a}
+
+function reset(){
+  const a=rand(0,Math.PI*2),d=rand(.22,.31);
+  p.x=Math.cos(a)*d;
+  p.y=Math.sin(a)*d;
+
+  wheelAngle=0;
+  lastTime=performance.now();
+  startTime=performance.now();
+  elapsed=0;
+  taps=0;
+  centeredHold=0;
+  gameOver=false;
+  isCharging=false;
+  chargePower=0;
+  totalPower=0;
+  tapPulse=0;
+  tapEffects=[];
+  floatingTexts=[];
+  resultEl.classList.remove("show");
+
+  rpm=Number(rpmSlider.value);
+
+  clayTexture=Array.from({length:46},()=>({
+    x:rand(-.85,.85),
+    y:rand(-.85,.85),
+    r:rand(.012,.035),
+    a:rand(.08,.22)
+  })).filter(d=>d.x*d.x+d.y*d.y<.75);
+
+  updateUI();
+  showMessage("Hold, aim, release","#f5c451");
+}
+
+function rotateCCWScreen(v,a){
+  const c=Math.cos(a),s=Math.sin(a);
+  return{x:v.x*c+v.y*s,y:-v.x*s+v.y*c};
+}
+
+function startCharge(){
+  if(gameOver||isCharging)return;
+  isCharging=true;
+  chargeStart=performance.now();
+  showMessage("Charging tap...","#74b9ff");
+}
+
+function releaseCharge(){
+  if(gameOver||!isCharging)return;
+  updateCharge(performance.now());
+  const power=Math.max(.08,chargePower);
+  isCharging=false;
+  tapPulse=1;
+  performTap(power);
+  chargePower=0;
+  updateUI();
+}
+
+function updateCharge(now){
+  if(isCharging)chargePower=Math.min(1,(now-chargeStart)/maxChargeTime);
+}
+
+function performTap(power){
+  if(gameOver)return;
+
+  taps++;
+  totalPower+=power;
+
+  const before=Math.hypot(p.x,p.y);
+  const nx=before>.0001?p.x/before:0;
+  const ny=before>.0001?p.y/before:0;
+  const timingQuality=Math.max(0,nx*strikeDirection.x+ny*strikeDirection.y);
+  const idealPower=Math.max(.14,Math.min(.95,before/.28));
+  const powerError=Math.abs(power-idealPower);
+  const powerQuality=Math.max(0,1-powerError/.65);
+  const usefulStrength=(.018+power*.105)*(.35+timingQuality*.85);
+
+  p.x+=tapImpulse.x*usefulStrength;
+  p.y+=tapImpulse.y*usefulStrength;
+
+  const tangent={x:-ny,y:nx};
+  const slip=(.5-timingQuality)*(.012+power*.018);
+  p.x+=tangent.x*slip;
+  p.y+=tangent.y*slip;
+
+  if(power>idealPower+.18&&before<.16){
+    const o=(power-idealPower)*.045;
+    p.x+=tapImpulse.x*o;
+    p.y+=tapImpulse.y*o;
+  }
+
+  const after=Math.hypot(p.x,p.y);
+  if(after>.58){
+    p.x=p.x/after*.58;
+    p.y=p.y/after*.58;
+  }
+
+  const finalDist=Math.hypot(p.x,p.y);
+  const improvement=before-finalDist;
+  let text="",color="";
+
+  if(timingQuality<.35){text="Bad angle";color="#ff7675"}
+  else if(power<idealPower-.24){text="Too light";color="#74b9ff"}
+  else if(power>idealPower+.24){text="Too strong!";color="#ff7675"}
+  else if(improvement>.045&&powerQuality>.75){text="Perfect tap!";color="#78e08f"}
+  else if(improvement>.018){text="Good tap";color="#f5c451"}
+  else if(improvement>-.006){text="Glance";color="#c084fc"}
+  else{text="Worse!";color="#ff7675"}
+
+  showMessage(text,color);
+  addTapEffect(power,color);
+  addFloatingText(text,color);
+  updateUI();
+}
+
+function showMessage(text,color){
+  messageEl.textContent=text;
+  messageEl.style.color=color||"white";
+  messageEl.classList.add("show");
+  clearTimeout(showMessage._timer);
+  showMessage._timer=setTimeout(()=>{if(!isCharging)messageEl.classList.remove("show")},900);
+}
+
+function addTapEffect(power,color){
+  tapEffects.push({
+    x:cx+p.x*wheelR,
+    y:cy+p.y*wheelR,
+    age:0,
+    max:.35+power*.28,
+    power,
+    color
+  });
+}
+
+function addFloatingText(text,color){
+  floatingTexts.push({
+    text,
+    color,
+    x:cx+p.x*wheelR,
+    y:cy+p.y*wheelR-clayR*1.3,
+    age:0,
+    max:.8
+  });
+}
+
+function updateUI(){
+  const dist=Math.hypot(p.x,p.y);
+  const progress=Math.max(0,Math.min(1,1-dist/.31));
+
+  tapCountEl.textContent=taps;
+  timerEl.textContent=elapsed.toFixed(1)+"s";
+  offsetTextEl.textContent=Math.round(dist*100)+"%";
+  progressBar.style.width=Math.round(progress*100)+"%";
+  powerFill.style.height=Math.round(chargePower*100)+"%";
+  powerPercent.textContent=Math.round(chargePower*100)+"%";
+
+  progressHint.textContent=dist<.025
+    ?"Centered! Hold steady..."
+    :dist<.075
+      ?"Very close. Use a tiny final tap."
+      :dist<.16
+        ?"Nice. Use medium or light taps now."
+        :"Wait for the clay to reach lower-right, then release.";
+}
+
+function getRank(score,taps){
+  if(score>=1100&&taps<=4)return{name:"Ningen Kokuhou",jp:"人間国宝",en:"Living National Treasure"};
+  if(score>=950&&taps<=5)return{name:"Dai Sensei",jp:"大先生",en:"Great Master"};
+  if(score>=800)return{name:"Sensei",jp:"先生",en:"Master"};
+  if(score>=600)return{name:"Senpai",jp:"先輩",en:"Senior"};
+  return{name:"Deshi",jp:"弟子",en:"Apprentice"};
+}
+
+function finishGame(){
+  gameOver=true;
+
+  p.x=0;
+  p.y=0;
+  centeredHold=0;
+  chargePower=0;
+
+  const avgPower=taps?totalPower/taps:0;
+  const score=Math.max(100,Math.min(1200,Math.round(
+    1000
+    -elapsed*18
+    -Math.max(0,taps-3)*80
+    -Math.abs(avgPower-.48)*90
+    +(taps<=4?170:0)
+    +Math.max(0,rpm-40)*2
+  )));
+
+  const rank=getRank(score,taps);
+  resultTitle.textContent=`${rank.name} ${rank.jp}`;
+  rankSub.textContent=rank.en;
+  scoreText.textContent=score;
+  resultDetails.textContent=`Centered in ${taps} tap${taps===1?"":"s"} and ${elapsed.toFixed(1)} seconds at ${rpm} RPM. Average tap power: ${Math.round(avgPower*100)}%.`;
+  resultEl.classList.add("show");
+  updateUI();
+}
+
+function drawBackground(){
+  ctx.clearRect(0,0,W,H);
+
+  const g=ctx.createRadialGradient(cx,cy,wheelR*.1,cx,cy,wheelR*1.8);
+  g.addColorStop(0,"#2c2630");
+  g.addColorStop(.55,"#151922");
+  g.addColorStop(1,"#090a0f");
+  ctx.fillStyle=g;
+  ctx.fillRect(0,0,W,H);
+
+  ctx.save();
+  ctx.globalAlpha=.08;
+  ctx.strokeStyle="#fff";
+  for(let i=0;i<20;i++){
+    const y=i/20*H+Math.sin(i)*10;
+    ctx.beginPath();
+    ctx.moveTo(0,y);
+    ctx.bezierCurveTo(W*.25,y+12,W*.6,y-18,W,y+7);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawWheel(){
+  ctx.save();
+  ctx.translate(cx,cy);
+
+  const sh=ctx.createRadialGradient(0,0,wheelR*.2,0,0,wheelR*1.1);
+  sh.addColorStop(0,"rgba(255,255,255,.08)");
+  sh.addColorStop(.6,"rgba(0,0,0,.15)");
+  sh.addColorStop(1,"rgba(0,0,0,.55)");
+  ctx.fillStyle=sh;
+  ctx.beginPath();
+  ctx.arc(0,0,wheelR*1.08,0,Math.PI*2);
+  ctx.fill();
+
+  const g=ctx.createRadialGradient(-wheelR*.18,-wheelR*.2,wheelR*.05,0,0,wheelR);
+  g.addColorStop(0,"#f4f7f8");
+  g.addColorStop(.25,"#c9d1d6");
+  g.addColorStop(.58,"#858f98");
+  g.addColorStop(1,"#4d5660");
+  ctx.fillStyle=g;
+  ctx.beginPath();
+  ctx.arc(0,0,wheelR,0,Math.PI*2);
+  ctx.fill();
+
+  ctx.clip();
+
+  ctx.save();
+  ctx.rotate(-wheelAngle);
+  for(let i=0;i<36;i++){
+    const a=i/36*Math.PI*2;
+    const inner=wheelR*.1;
+    const outer=wheelR*(.86+.08*Math.sin(i*2.1));
+    ctx.strokeStyle=i%2?"rgba(255,255,255,.11)":"rgba(0,0,0,.08)";
+    ctx.lineWidth=1;
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(a)*inner,Math.sin(a)*inner);
+    ctx.lineTo(Math.cos(a)*outer,Math.sin(a)*outer);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  for(let r=wheelR*.18;r<wheelR;r+=wheelR*.13){
+    ctx.strokeStyle="rgba(255,255,255,.15)";
+    ctx.lineWidth=1;
+    ctx.beginPath();
+    ctx.arc(0,0,r,0,Math.PI*2);
+    ctx.stroke();
+  }
+
+  ctx.strokeStyle="rgba(120,224,143,.85)";
+  ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.arc(0,0,wheelR*.035,0,Math.PI*2);
+  ctx.stroke();
+
+  ctx.strokeStyle="rgba(120,224,143,.35)";
+  ctx.lineWidth=1;
+  ctx.beginPath();
+  ctx.arc(0,0,wheelR*.075,0,Math.PI*2);
+  ctx.stroke();
+
+  const za=tapAngle,zw=Math.PI/4.4;
+  ctx.strokeStyle="rgba(245,196,81,.9)";
+  ctx.lineWidth=10;
+  ctx.beginPath();
+  ctx.arc(0,0,wheelR*.42,za-zw/2,za+zw/2);
+  ctx.stroke();
+
+  ctx.fillStyle="rgba(245,196,81,.13)";
+  ctx.beginPath();
+  ctx.moveTo(0,0);
+  ctx.arc(0,0,wheelR*.56,za-zw/2,za+zw/2);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function drawClay(){
+  const x=cx+p.x*wheelR;
+  const y=cy+p.y*wheelR;
+
+  ctx.save();
+
+  ctx.fillStyle="rgba(0,0,0,.32)";
+  ctx.beginPath();
+  ctx.ellipse(x+clayR*.12,y+clayR*.17,clayR*1.05,clayR*.95,0,0,Math.PI*2);
+  ctx.fill();
+
+  const g=ctx.createRadialGradient(x-clayR*.25,y-clayR*.32,clayR*.05,x,y,clayR);
+  g.addColorStop(0,"#b87943");
+  g.addColorStop(.42,"#8f542f");
+  g.addColorStop(1,"#5c331e");
+  ctx.fillStyle=g;
+  ctx.beginPath();
+  ctx.arc(x,y,clayR,0,Math.PI*2);
+  ctx.fill();
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(x,y,clayR,0,Math.PI*2);
+  ctx.clip();
+
+  for(const d of clayTexture){
+    ctx.fillStyle=`rgba(255,211,153,${d.a})`;
+    ctx.beginPath();
+    ctx.arc(x+d.x*clayR,y+d.y*clayR,d.r*clayR*5,0,Math.PI*2);
+    ctx.fill();
+  }
+
+  ctx.strokeStyle="rgba(45,25,15,.25)";
+  ctx.lineWidth=2;
+  for(let r=clayR*.18;r<clayR*.9;r+=clayR*.17){
+    ctx.beginPath();
+    ctx.arc(x,y,r,0,Math.PI*2);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  ctx.strokeStyle="rgba(255,226,184,.32)";
+  ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.arc(x,y,clayR,0,Math.PI*2);
+  ctx.stroke();
+
+  ctx.fillStyle="rgba(255,255,255,.9)";
+  ctx.beginPath();
+  ctx.arc(x,y,Math.max(3,clayR*.07),0,Math.PI*2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function drawFingerGuide(){
+  if(gameOver)return;
+
+  const pull=isCharging?chargePower*34:0;
+  const snap=tapPulse>0?tapPulse*18:0;
+  const pulse=Math.sin(performance.now()*.012)*2;
+  const dir=strikeDirection;
+
+  const startX=cx+dir.x*wheelR*1.22+dir.x*pull-dir.x*snap*.2;
+  const startY=cy+dir.y*wheelR*1.22+dir.y*pull-dir.y*snap*.2;
+  const endX=cx+dir.x*wheelR*.66-dir.x*snap;
+  const endY=cy+dir.y*wheelR*.66-dir.y*snap;
+  const glow=isCharging?chargePower:0;
+
+  ctx.save();
+  ctx.lineCap="round";
+
+  ctx.strokeStyle=isCharging
+    ?`rgba(245,196,81,${.18+glow*.28})`
+    :"rgba(255,226,184,.22)";
+  ctx.lineWidth=18+glow*12;
+  ctx.beginPath();
+  ctx.moveTo(startX,startY);
+  ctx.lineTo(endX,endY);
+  ctx.stroke();
+
+  ctx.strokeStyle=isCharging?"rgba(245,196,81,.88)":"rgba(255,226,184,.65)";
+  ctx.lineWidth=5+glow*4;
+  ctx.beginPath();
+  ctx.moveTo(startX,startY);
+  ctx.lineTo(endX,endY);
+  ctx.stroke();
+
+  ctx.fillStyle=isCharging?"rgba(245,196,81,.9)":"rgba(255,210,170,.78)";
+  ctx.beginPath();
+  ctx.arc(endX,endY,13+glow*8+pulse*.4,0,Math.PI*2);
+  ctx.fill();
+
+  const ax=endX-dir.x*5,ay=endY-dir.y*5;
+  const px=-dir.y,py=dir.x;
+  ctx.fillStyle="rgba(245,196,81,.9)";
+  ctx.beginPath();
+  ctx.moveTo(ax-dir.x*16,ay-dir.y*16);
+  ctx.lineTo(ax+px*12,ay+py*12);
+  ctx.lineTo(ax-px*12,ay-py*12);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function drawTapEffects(dt){
+  tapEffects=tapEffects.filter(e=>e.age<e.max);
+  for(const e of tapEffects){
+    e.age+=dt;
+    const t=e.age/e.max;
+    ctx.save();
+    ctx.globalAlpha=1-t;
+    ctx.strokeStyle=e.color;
+    ctx.lineWidth=2+e.power*5;
+    ctx.beginPath();
+    ctx.arc(e.x,e.y,clayR*(.35+t*(1.1+e.power*1.2)),0,Math.PI*2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  floatingTexts=floatingTexts.filter(f=>f.age<f.max);
+  for(const f of floatingTexts){
+    f.age+=dt;
+    const t=f.age/f.max;
+    ctx.save();
+    ctx.globalAlpha=1-t;
+    ctx.fillStyle=f.color;
+    ctx.font="800 18px system-ui,sans-serif";
+    ctx.textAlign="center";
+    ctx.fillText(f.text,f.x,f.y-t*36);
+    ctx.restore();
+  }
+}
+
+function drawHUDHints(){
+  if(gameOver)return;
+  ctx.save();
+  ctx.textAlign="center";
+  ctx.fillStyle="rgba(255,255,255,.72)";
+  ctx.font="700 13px system-ui,sans-serif";
+  ctx.fillText("Hold, aim, release",cx,cy+wheelR+34);
+  ctx.restore();
+}
+
+function loop(now){
+  if(W<10||H<10)resize();
+
+  const dt=Math.min(.033,(now-lastTime)/1000);
+  lastTime=now;
+
+  rpm=Number(rpmSlider.value);
+  rpmLabel.textContent=rpm;
+  const omega=rpm*Math.PI*2/60;
+  wheelAngle+=omega*dt;
+
+  if(!gameOver){
+    elapsed=(now-startTime)/1000;
+    updateCharge(now);
+
+    p=rotateCCWScreen(p,omega*dt);
+
+    const dist=Math.hypot(p.x,p.y);
+    const damping=1-dt*.002;
+    p.x*=damping;
+    p.y*=damping;
+
+    const d2=Math.hypot(p.x,p.y);
+    if(d2>.58){
+      p.x=p.x/d2*.58;
+      p.y=p.y/d2*.58;
+    }
+
+    if(dist<.025){
+      centeredHold+=dt;
+      if(centeredHold>.38)finishGame();
+    }else{
+      centeredHold=0;
+    }
+
+    tapPulse=Math.max(0,tapPulse-dt*6.5);
+    updateUI();
+  }
+
+  drawBackground();
+  drawWheel();
+  drawFingerGuide();
+  drawClay();
+  drawTapEffects(dt);
+  drawHUDHints();
+
+  requestAnimationFrame(loop);
+}
+
+canvas.addEventListener("pointerdown",e=>{
+  e.preventDefault();
+  canvas.setPointerCapture?.(e.pointerId);
+  startCharge();
+});
+canvas.addEventListener("pointerup",e=>{
+  e.preventDefault();
+  releaseCharge();
+});
+canvas.addEventListener("pointercancel",e=>{
+  e.preventDefault();
+  releaseCharge();
+});
+canvas.addEventListener("pointerleave",()=>{
+  if(isCharging)releaseCharge();
+});
+
+tapBtn.addEventListener("pointerdown",e=>{
+  e.preventDefault();
+  startCharge();
+});
+tapBtn.addEventListener("pointerup",e=>{
+  e.preventDefault();
+  releaseCharge();
+});
+tapBtn.addEventListener("pointercancel",e=>{
+  e.preventDefault();
+  releaseCharge();
+});
+tapBtn.addEventListener("pointerleave",()=>{
+  if(isCharging)releaseCharge();
+});
+
+restartBtn.addEventListener("click",reset);
+playAgainBtn.addEventListener("click",reset);
+
+window.addEventListener("keydown",e=>{
+  if(e.code==="Space"&&!e.repeat){
+    e.preventDefault();
+    startCharge();
+  }
+  if(e.code==="KeyR")reset();
+});
+window.addEventListener("keyup",e=>{
+  if(e.code==="Space"){
+    e.preventDefault();
+    releaseCharge();
+  }
+});
+
+window.addEventListener("resize",resize);
+new ResizeObserver(resize).observe(gameWrap);
+
+resize();
+reset();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
