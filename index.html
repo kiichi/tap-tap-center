@@ -6,28 +6,31 @@
 <title>Tap Tap Center</title>
 <style>
 :root{--text:#f3eadf;--muted:#b9ad9d;--gold:#f5c451;--green:#78e08f;--red:#ff7675;--blue:#74b9ff;--purple:#c084fc}
-*{box-sizing:border-box}
-html,body{width:100%;height:100%;margin:0}
-body{min-height:100vh;background:radial-gradient(circle at 50% 30%,#27202a 0%,#111318 55%,#08090c 100%);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;display:flex;flex-direction:column;overflow:hidden}
-header{padding:12px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px;background:rgba(8,9,12,.7);border-bottom:1px solid rgba(255,255,255,.08);backdrop-filter:blur(10px);z-index:10}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;margin:0;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+body{min-height:100vh;background:radial-gradient(circle at 50% 30%,#27202a 0%,#111318 55%,#08090c 100%);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;display:flex;flex-direction:column;overflow:hidden;touch-action:manipulation}
+header{padding:12px 18px;display:flex;justify-content:space-between;align-items:center;gap:16px;background:rgba(8,9,12,.7);border-bottom:1px solid rgba(255,255,255,.08);backdrop-filter:blur(10px);z-index:10}
 h1{font-size:20px;margin:0;letter-spacing:.03em}.subtitle{color:var(--muted);font-size:13px;margin-top:2px}
-.top-stats{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}.stat{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:8px 10px;min-width:86px;text-align:center}.stat strong{display:block;font-size:17px;color:white}.stat span{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+.header-progress{width:min(420px,46vw);background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:9px 12px}
+.header-progress h2{font-size:12px;margin:0 0 6px;color:white;text-transform:uppercase;letter-spacing:.08em}
+.header-progress p{margin:6px 0 0;color:var(--muted);font-size:12px;line-height:1.25}
+.sideStats{display:grid;grid-template-columns:1fr;gap:8px}.stat{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:8px 10px;min-width:86px;text-align:center}.stat strong{display:block;font-size:22px;color:white}.stat span{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em}
 main{flex:1;display:grid;grid-template-columns:minmax(320px,1fr) 280px;min-height:0}
-#gameWrap{position:relative;min-height:520px;overflow:hidden;background:#0b0d12}
-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:pointer}
+#gameWrap{position:relative;min-height:520px;overflow:hidden;background:#0b0d12;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:none}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 aside{background:rgba(20,22,30,.86);border-left:1px solid rgba(255,255,255,.08);padding:16px;overflow-y:auto;backdrop-filter:blur(12px)}
 .card{background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.035));border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:14px;margin-bottom:14px}.card h2{font-size:15px;margin:0 0 8px;color:white}.card p,.card li{color:var(--muted);font-size:13px;line-height:1.45}.card ul{padding-left:18px;margin:8px 0 0}
 .creditCard{text-align:center}.creditCard a{color:var(--gold);font-weight:900;text-decoration:none}.creditCard a:hover{text-decoration:underline}.creditCard p{margin:4px 0}
-button{appearance:none;border:0;border-radius:14px;padding:12px 14px;font-weight:800;color:#15110a;background:linear-gradient(180deg,#ffd66b,#f5a623);box-shadow:0 6px 20px rgba(245,196,81,.25);cursor:pointer;width:100%;font-size:15px;user-select:none;touch-action:none}button:active{transform:translateY(1px)}.secondary{background:linear-gradient(180deg,#a9c9ff,#5d91ff);color:#071123;box-shadow:0 6px 20px rgba(116,185,255,.2);margin-top:8px}
+button{appearance:none;border:0;border-radius:14px;padding:12px 14px;font-weight:800;color:#15110a;background:linear-gradient(180deg,#ffd66b,#f5a623);box-shadow:0 6px 20px rgba(245,196,81,.25);cursor:pointer;width:100%;font-size:15px;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none}button:active{transform:translateY(1px)}.secondary{background:linear-gradient(180deg,#a9c9ff,#5d91ff);color:#071123;box-shadow:0 6px 20px rgba(116,185,255,.2);margin-top:8px}
 label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em}input[type=range]{width:100%}
 .meter{height:12px;border-radius:20px;background:rgba(255,255,255,.09);overflow:hidden;border:1px solid rgba(255,255,255,.08)}.meter>div{height:100%;width:0%;transition:width .06s linear;background:linear-gradient(90deg,var(--red),var(--gold),var(--green))}
-#powerOverlay{position:absolute;right:18px;top:50%;transform:translateY(-50%);height:min(430px,70%);width:72px;z-index:7;pointer-events:none;display:flex;align-items:center;justify-content:center;gap:8px;opacity:.96}
+#powerOverlay{position:absolute;right:18px;top:50%;transform:translateY(-50%);height:min(430px,70%);width:72px;z-index:7;pointer-events:none;display:flex;align-items:center;justify-content:center;gap:8px;opacity:.96;-webkit-user-select:none;user-select:none}
 .powerLabels{height:100%;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;font-size:10px;font-weight:900;color:rgba(255,255,255,.65);text-shadow:0 1px 4px rgba(0,0,0,.8);letter-spacing:.04em}
 .powerGauge{position:relative;width:28px;height:100%;border-radius:999px;background:linear-gradient(180deg,rgba(255,118,117,.18),rgba(245,196,81,.13),rgba(116,185,255,.13));border:2px solid rgba(255,255,255,.2);box-shadow:inset 0 0 16px rgba(0,0,0,.55),0 8px 30px rgba(0,0,0,.35);overflow:hidden}
 #powerFill{position:absolute;left:0;bottom:0;width:100%;height:0%;background:linear-gradient(0deg,#74b9ff 0%,#f5c451 58%,#ff7675 100%);border-radius:999px;transition:height .04s linear;box-shadow:0 0 18px rgba(245,196,81,.35)}
 .powerTicks{position:absolute;inset:8px 0;display:flex;flex-direction:column;justify-content:space-between;pointer-events:none}.powerTicks span{display:block;height:1px;width:100%;background:rgba(255,255,255,.28)}
 #powerPercent{position:absolute;right:0;bottom:-34px;width:72px;text-align:center;color:white;font-size:17px;font-weight:950;text-shadow:0 2px 8px rgba(0,0,0,.8)}
-#message{position:absolute;left:50%;top:22px;transform:translateX(-50%);padding:10px 14px;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.12);border-radius:999px;font-weight:800;color:white;opacity:0;pointer-events:none;transition:opacity .15s ease;white-space:nowrap;z-index:8}#message.show{opacity:1}
+#message{position:absolute;left:50%;top:22px;transform:translateX(-50%);padding:10px 14px;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.12);border-radius:999px;font-weight:800;color:white;opacity:0;pointer-events:none;transition:opacity .15s ease;white-space:nowrap;z-index:8;-webkit-user-select:none;user-select:none}#message.show{opacity:1}
 .result{position:absolute;inset:0;display:none;align-items:flex-start;justify-content:center;background:rgba(120,120,120,.23);z-index:20;padding:18px 20px 20px;pointer-events:auto}
 .result.show{display:flex}
 .resultBox{width:min(560px,92vw);background:rgba(24,28,37,.86);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);box-shadow:0 18px 60px rgba(0,0,0,.42);border-radius:22px;padding:16px 18px;text-align:center}
@@ -35,7 +38,7 @@ label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;text-tra
 .resultActions{display:flex;gap:10px;justify-content:center}.resultActions button{max-width:180px;padding:10px 12px}
 .rankList li{display:flex;justify-content:space-between;gap:8px}.rankList b{color:white}.rankList small{color:var(--muted)}
 kbd{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-bottom-width:3px;padding:2px 6px;border-radius:6px;color:white;font-size:12px}
-@media(max-width:850px){body{overflow:auto}main{grid-template-columns:1fr;grid-template-rows:minmax(420px,62vh) auto}#gameWrap{min-height:420px}aside{border-left:0;border-top:1px solid rgba(255,255,255,.08)}header{align-items:flex-start;flex-direction:column}.top-stats{width:100%;justify-content:space-between}.stat{flex:1}#powerOverlay{right:10px;width:58px;height:min(330px,64%)}#powerPercent{width:58px;font-size:14px}.resultBox h2{font-size:20px}.scoreBig{font-size:34px}}
+@media(max-width:850px){body{overflow:auto}header{align-items:flex-start;flex-direction:column}.header-progress{width:100%}main{grid-template-columns:1fr;grid-template-rows:minmax(420px,62vh) auto}#gameWrap{min-height:420px}aside{border-left:0;border-top:1px solid rgba(255,255,255,.08)}.sideStats{grid-template-columns:repeat(3,1fr)}.stat{min-width:0}.stat strong{font-size:18px}#powerOverlay{right:10px;width:58px;height:min(330px,64%)}#powerPercent{width:58px;font-size:14px}.resultBox h2{font-size:20px}.scoreBig{font-size:34px}}
 </style>
 </head>
 <body>
@@ -44,10 +47,11 @@ kbd{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);borde
     <h1>Tap Tap Center</h1>
     <div class="subtitle">Center the clay with timed fingertip taps</div>
   </div>
-  <div class="top-stats">
-    <div class="stat"><strong id="tapCount">0</strong><span>Taps</span></div>
-    <div class="stat"><strong id="timer">0.0s</strong><span>Time</span></div>
-    <div class="stat"><strong id="offsetText">--</strong><span>Off Center</span></div>
+
+  <div class="header-progress">
+    <h2>Centering progress</h2>
+    <div class="meter"><div id="progressBar"></div></div>
+    <p id="progressHint">Get the clay dot into the center ring.</p>
   </div>
 </header>
 
@@ -81,9 +85,11 @@ kbd{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);borde
 
   <aside>
     <div class="card">
-      <h2>Centering progress</h2>
-      <div class="meter"><div id="progressBar"></div></div>
-      <p id="progressHint">Get the clay dot into the center ring.</p>
+      <div class="sideStats">
+        <div class="stat"><strong id="tapCount">0</strong><span>Taps</span></div>
+        <div class="stat"><strong id="timer">0.0s</strong><span>Time</span></div>
+        <div class="stat"><strong id="offsetText">--</strong><span>Off Center</span></div>
+      </div>
     </div>
 
     <div class="card">
@@ -110,17 +116,17 @@ kbd{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);borde
     <div class="card" style="margin-top:14px;">
       <h2>Ranks</h2>
       <ul class="rankList">
-        <li><b>Deshi 弟子</b><small>Apprentice</small></li>
-        <li><b>Senpai 先輩</b><small>Senior</small></li>
-        <li><b>Sensei 先生</b><small>Master</small></li>
-        <li><b>Dai Sensei 大先生</b><small>Great Master</small></li>
-        <li><b>Ningen Kokuhou 人間国宝</b><small>Living National Treasure</small></li>
+        <li><b>Deshi 弟子</b><small>0–299</small></li>
+        <li><b>Senpai 先輩</b><small>300–519</small></li>
+        <li><b>Sensei 先生</b><small>520–699</small></li>
+        <li><b>Dai Sensei 大先生</b><small>700–849</small></li>
+        <li><b>Ningen Kokuhou 人間国宝</b><small>850+</small></li>
       </ul>
     </div>
 
     <div class="card">
       <h2>Scoring</h2>
-      <p>Excellent: centered in 3–4 taps. Beginner: more taps and more time. Clean timing plus correct strength gives the best rank.</p>
+      <p>Score is now 0–1000. The ranking is more generous: a solid run around 300–400 earns Senpai instead of Deshi.</p>
     </div>
 
     <div class="card creditCard">
@@ -165,6 +171,17 @@ const maxChargeTime=1000;
 const tapAngle=Math.PI/7.2;
 const strikeDirection={x:Math.cos(tapAngle),y:Math.sin(tapAngle)};
 const tapImpulse={x:-strikeDirection.x,y:-strikeDirection.y};
+
+function blockMobileSelection(el){
+  ["contextmenu","selectstart","dragstart"].forEach(type=>{
+    el.addEventListener(type,e=>e.preventDefault(),{passive:false});
+  });
+  el.addEventListener("touchstart",e=>{}, {passive:false});
+}
+
+blockMobileSelection(document.body);
+blockMobileSelection(gameWrap);
+blockMobileSelection(canvas);
 
 function resize(){
   const r=gameWrap.getBoundingClientRect();
@@ -346,10 +363,10 @@ function updateUI(){
 }
 
 function getRank(score,taps){
-  if(score>=1100&&taps<=4)return{name:"Ningen Kokuhou",jp:"人間国宝",en:"Living National Treasure"};
-  if(score>=950&&taps<=5)return{name:"Dai Sensei",jp:"大先生",en:"Great Master"};
-  if(score>=800)return{name:"Sensei",jp:"先生",en:"Master"};
-  if(score>=600)return{name:"Senpai",jp:"先輩",en:"Senior"};
+  if(score>=850&&taps<=7)return{name:"Ningen Kokuhou",jp:"人間国宝",en:"Living National Treasure"};
+  if(score>=700)return{name:"Dai Sensei",jp:"大先生",en:"Great Master"};
+  if(score>=520)return{name:"Sensei",jp:"先生",en:"Master"};
+  if(score>=300)return{name:"Senpai",jp:"先輩",en:"Senior"};
   return{name:"Deshi",jp:"弟子",en:"Apprentice"};
 }
 
@@ -362,13 +379,15 @@ function finishGame(){
   chargePower=0;
 
   const avgPower=taps?totalPower/taps:0;
-  const score=Math.max(100,Math.min(1200,Math.round(
-    1000
-    -elapsed*18
-    -Math.max(0,taps-3)*80
-    -Math.abs(avgPower-.48)*90
-    +(taps<=4?170:0)
-    +Math.max(0,rpm-40)*2
+
+  const score=Math.max(0,Math.min(1000,Math.round(
+    820
+    -elapsed*10
+    -Math.max(0,taps-4)*45
+    -Math.abs(avgPower-.48)*45
+    +(taps<=4?140:0)
+    +(taps<=6?70:0)
+    +Math.max(0,rpm-40)*1.5
   )));
 
   const rank=getRank(score,taps);
