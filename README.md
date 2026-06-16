@@ -6,6 +6,8 @@ Built with [voov.ai](https://voov.ai) — the next-generation AI ecosystem platf
 
 **Play it live:** [catalyst.voov.ai/share/gp5ccLYvDjG_bLY4FsrgX1](https://catalyst.voov.ai/share/gp5ccLYvDjG_bLY4FsrgX1)
 
+![Tap Tap Center screenshot](screenshot.png)
+
 ---
 
 ## How to Play
