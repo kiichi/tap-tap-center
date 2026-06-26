@@ -19,6 +19,8 @@ A potter's wheel skill game. The clay starts off-center on a spinning wheel. You
 
 Works on desktop and mobile. No download. Tap to start.
 
+![QR Code](qrcode.jpg)
+
 ---
 
 ## How to play
